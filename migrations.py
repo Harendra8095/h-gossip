@@ -3,8 +3,9 @@ from hgossipBack.models import *
 from flask_script import Manager
 from server import app
 
-manager = Manager(app)
 migrate = Migrate(app, Base)
+manager = Manager(app)
+
 manager.add_command('db', MigrateCommand)
 
 if __name__ == '__main__':

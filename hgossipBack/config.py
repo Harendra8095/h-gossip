@@ -18,7 +18,6 @@ class DbEngine_config():
     print(DB_NAME)
     DB_URL = f'{DB_DIALECT}://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
     SQLALCHEMY_DATABASE_URI = DB_URL
-    SQALCHEMY_TRACK_MODIFICATIONS = False
 
 class DevelopmentConfig(Config):
     DEVELOPMENT = True
