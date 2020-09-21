@@ -1,18 +1,13 @@
 import os
 from flask import Flask, render_template, flash, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 
 from hgossipBack.forms.login import LoginFrom
 from hgossipBack.config import DevelopmentConfig, DbEngine_config
-from hgossipBack import create_db_engine, create_db_sessionFactory
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
-engine = create_db_engine(DbEngine_config)
-SQLSession = create_db_sessionFactory(engine)
 
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig())
