@@ -1,5 +1,6 @@
 from .meta import Base
 from .usermodels import User
+from .postsmodels import Post
 
 def createTables(engine):
     # print("Binding")

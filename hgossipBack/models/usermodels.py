@@ -2,6 +2,9 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String, Sequence
 from .meta import Base
 
+from server import SQLSession
+
+session = SQLSession
 
 class User(Base):
     """ User Model for storing user related details """
