@@ -25,5 +25,9 @@
         <p>
             {{ form.submit() }}
         </p>
+        <p>
+            New User?
+            <a href="{{ url_for('register') }}">Click to register!</a>
+        </p>
     </form>
 {% endblock %}
