@@ -6,6 +6,14 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY')
     DEBUG = False
 
+class MailConfig():
+    MAIL_SERVER = os.environ.get('MAIL_SERVER')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)
+    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    ADMINS = ['harendrarathor444@gmail.com']
+
 class DbEngine_config():
     DB_DIALECT = os.environ.get('DB_DIALECT') or 'postgresql'
     DB_HOST = os.environ.get('DB_HOST') or 'localhost'
