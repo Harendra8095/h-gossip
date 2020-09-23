@@ -18,6 +18,7 @@ class User(Base, UserMixin):
     username = Column(String(64), unique=True, index=True)
     email = Column(String(127), unique=True, index=True)
     password_hash = Column(String(127))
+    posts = relationship('Post', backref='author', lazy='dynamic')
     bio = Column(String(127))
     last_seen = Column(DateTime, default=datetime.utcnow)
 
@@ -59,12 +60,14 @@ class User(Base, UserMixin):
 
     
     def followed_posts(self):
-        followed = Post.query.join(
+        from server import SQLSession
+        session = SQLSession()
+        followed = session.query(Post).join(
             followers, (followers.c.followed_id == Post.user_id)
         ).filter(
             followers.c.follower_id == self.id
         )
-        own = Post.query.filter_by(user_id=self.id)
+        own = session.query(Post).filter_by(user_id=self.id)
         return followed.union(own).order_by(Post.timestamp.desc())
     
     

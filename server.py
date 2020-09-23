@@ -6,14 +6,16 @@ from werkzeug.urls import url_parse
 from datetime import datetime
 import logging
 from logging.handlers import SMTPHandler, RotatingFileHandler
+from sqlalchemy_paginator import Paginator
 
 from hgossipBack.forms.login import LoginFrom
 from hgossipBack.forms.register import RegistrationForm
 from hgossipBack.forms.editprofile import EditProfile
 from hgossipBack.forms.follow import EmptyForm
+from hgossipBack.forms.post import PostForm
 from hgossipBack.config import *
 from hgossipBack import create_db_engine, create_db_sessionFactory
-from hgossipBack.models import User, destroyTables, createTables
+from hgossipBack.models import User, Post
 
 from dotenv import load_dotenv
 
@@ -98,23 +100,25 @@ def get():
     return "<h1> Hello, Welcome to backend of h-gossip </h1>"
 
 
-@app.route('/index')
+@app.route('/index', methods=['GET', 'POST'])
+@login_required
 def index():
-    posts = [
-        {
-            'author': {'username': 'kajal'},
-            'body': 'Build it asap!'
-        },
-        {
-            'author': {'username': 'urmila'},
-            'body': 'Refactor Refactor Refactor!!!!'
-        },
-        {
-            'author': {'username': 'harry'},
-            'body': 'I love you!'
-        }
-    ]
-    return render_template('/index.html',title='Home Page', posts=posts)
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(body=form.post.data, author=current_user)
+        session.add(post)
+        session.commit()
+        flash('Your post is now live!')
+        return redirect(url_for('index'))
+    posts = current_user.followed_posts().all()
+    return render_template("index.html", title='Home Page', form=form, posts=posts)
+
+
+@app.route('/explore')
+@login_required
+def explore():
+    posts = session.query(Post).order_by(Post.timestamp.desc()).all()
+    return render_template('index.html', title='Explore', posts=posts)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -176,13 +180,20 @@ def logout():
 @app.route('/user/<username>')
 @login_required
 def user(username):
-    form = EmptyForm()
     user = session.query(User).filter_by(username=username).first()
-    posts = [
-        {'author':user, 'body':'Test post #1'},
-        {'author':user, 'body':'Test post #2'}
-    ]
-    return render_template('user.html', user=user, posts=posts, form=form)
+    # page_no = request.args.get('page', 1, type=int)
+    posts = user.posts.order_by(Post.timestamp.desc())
+    paginator = Paginator(posts, app.config['POSTS_PER_PAGE'])
+    page = paginator.page(page_number=1)
+    # paginator(
+    #    page, app.config['POSTS_PER_PAGE'], False
+    # )
+    next_url = url_for('user', username=user.username, page_no=page.next_page_number) \
+        if page.has_next() else None
+    prev_url = url_for('user', username=user.username, page_no=page.previous_page_number) \
+        if page.has_previous() else None
+    form = EmptyForm()
+    return render_template('user.html', user=user, posts=posts, next_url=next_url, prev_url=prev_url, form=form)
 
 
 @app.route('/follow/<username>', methods=['POST'])

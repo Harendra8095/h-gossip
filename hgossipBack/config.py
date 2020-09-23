@@ -4,6 +4,7 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY')
+    POSTS_PER_PAGE = 25
     DEBUG = False
 
 class MailConfig():
