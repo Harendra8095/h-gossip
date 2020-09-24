@@ -19,6 +19,8 @@ from hgossipBack.config import *
 from hgossipBack import create_db_engine, create_db_sessionFactory
 from hgossipBack.models import User, Post
 
+from flask_bootstrap import Bootstrap
+
 from flask_mail import Mail
 from flask_mail import Message
 
@@ -37,11 +39,14 @@ app.config.from_object(ProductionConfig())
 app.config.from_object(DbEngine_config())
 app.config.from_object(MailConfig())
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+
 login = LoginManager(app)
 login.login_view = 'login'
 
 
 mail = Mail(app)
+
+bootstrap = Bootstrap(app)
 
 def send_async_email(app, msg):
     with app.app_context():
