@@ -7,6 +7,7 @@ from datetime import datetime
 import logging
 from logging.handlers import SMTPHandler, RotatingFileHandler
 from sqlalchemy_paginator import Paginator
+from threading import Thread
 
 from hgossipBack.forms.login import LoginFrom
 from hgossipBack.forms.register import RegistrationForm
@@ -42,11 +43,16 @@ login.login_view = 'login'
 
 mail = Mail(app)
 
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+
 def send_mail(subject, sender, recipients, text_body, html_body):
     msg = Message(subject, sender=sender, recipients=recipients)
     msg.body = text_body
     msg.html = html_body
-    mail.send(msg)
+    Thread(target=send_async_email, args=(app, msg)).start()
 
 
 def send_password_reset_email(user):
