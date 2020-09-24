@@ -10,6 +10,9 @@ from .meta import Base
 from .follower import followers
 from .postsmodels import Post
 
+from time import time
+import jwt
+
 class User(Base, UserMixin):
     """ User Model for storing user related details """
     __tablename__ = "user"
@@ -69,7 +72,27 @@ class User(Base, UserMixin):
         )
         own = session.query(Post).filter_by(user_id=self.id)
         return followed.union(own).order_by(Post.timestamp.desc())
+
+
+    def get_reset_password_token(self, expires_in=6000):
+        from server import app
+        return jwt.encode(
+            {'reset_password': self.id, 'exp': time() + expires_in},
+            app.config['SECRET_KEY'], algorithm='HS256'
+        ).decode('utf-8')
     
-    
+
     def __repr__(self):
         return '<User {}>'.format(self.username)
+
+
+    @staticmethod
+    def verify_reset_password(token):
+        from server import app, SQLSession
+        session = SQLSession()
+        try:
+            id=jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])['reset_password']
+        except:
+            return
+        return session.query(User).get(id)
+    

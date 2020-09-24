@@ -26,6 +26,10 @@
             {{ form.submit() }}
         </p>
         <p>
+            Forget Your password?
+            <a href="{{ url_for('reset_password_request') }}">Click to Reset Pass</a>
+        </p>
+        <p>
             New User?
             <a href="{{ url_for('register') }}">Click to register!</a>
         </p>

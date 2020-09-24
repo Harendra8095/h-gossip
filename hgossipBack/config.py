@@ -6,6 +6,7 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY')
     POSTS_PER_PAGE = 25
     DEBUG = False
+    ADMINS = ['Harendra']
 
 class MailConfig():
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
@@ -13,7 +14,6 @@ class MailConfig():
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    ADMINS = ['harendrarathor444@gmail.com']
 
 class DbEngine_config():
     DB_DIALECT = os.environ.get('DB_DIALECT') or 'postgresql'

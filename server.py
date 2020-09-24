@@ -13,9 +13,13 @@ from hgossipBack.forms.register import RegistrationForm
 from hgossipBack.forms.editprofile import EditProfile
 from hgossipBack.forms.follow import EmptyForm
 from hgossipBack.forms.post import PostForm
+from hgossipBack.forms.reset import ResetPasswordRequestForm, ResetPasswordForm
 from hgossipBack.config import *
 from hgossipBack import create_db_engine, create_db_sessionFactory
 from hgossipBack.models import User, Post
+
+from flask_mail import Mail
+from flask_mail import Message
 
 from dotenv import load_dotenv
 
@@ -34,6 +38,31 @@ app.config.from_object(MailConfig())
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 login = LoginManager(app)
 login.login_view = 'login'
+
+
+mail = Mail(app)
+
+def send_mail(subject, sender, recipients, text_body, html_body):
+    msg = Message(subject, sender=sender, recipients=recipients)
+    msg.body = text_body
+    msg.html = html_body
+    mail.send(msg)
+
+
+def send_password_reset_email(user):
+    token = user.get_reset_password_token()
+    send_mail('[hgossip] Reset Your Password',
+        sender=app.config['ADMINS'][0],
+        recipients=[user.email],
+        text_body=render_template('email/reset_password.txt',
+            user=user,
+            token=token
+            ),
+        html_body=render_template('email/reset_password.html',
+                user=user,
+                token=token
+            )
+    )
 
 
 # TODO Testing of mail service
@@ -169,6 +198,38 @@ def edit_profile():
         form.username.data = u.username
         form.bio.data = u.bio
     return render_template('edit_profile.html', title='Edit Profile', form=form)
+
+
+@app.route('/reset_password_request', methods=['GET', 'POST'])
+def reset_password_request():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = ResetPasswordRequestForm()
+    if form.validate_on_submit():
+        user = session.query(User).filter_by(email=form.email.data).first()
+        if user:
+            send_password_reset_email(user)
+        flash('Check your email for the instructions to reset your password')
+        return redirect(url_for('login'))
+    return render_template('reset_pass.html', title='Reset Password', form=form)
+
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    user = User.verify_reset_password(token)
+    if not user:
+        return redirect(url_for('index'))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        u = session.query(User).filter_by(username=user.username).first()
+        u.set_password(form.password.data)
+        session.commit()
+        session.close()
+        flash('Your Password has been reset.')
+        return redirect(url_for('login'))
+    return render_template('reset_password.html', form=form)
 
 
 @app.route('/logout')
