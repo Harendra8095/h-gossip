@@ -56,7 +56,7 @@ class User(Base, UserMixin):
         if not self.is_following(user):
             self.followed.append(user)
 
-    
+    # TODO unfollow not working
     def unfollow(self, user):
         if not self.is_following(user):
             self.followed.remove(user)
