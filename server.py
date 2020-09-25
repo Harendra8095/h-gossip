@@ -3,7 +3,10 @@ from flask import Flask, render_template, flash, redirect, url_for, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
+
 from datetime import datetime
+from flask_moment import Moment
+
 import logging
 from logging.handlers import SMTPHandler, RotatingFileHandler
 from sqlalchemy_paginator import Paginator
@@ -39,6 +42,8 @@ app.config.from_object(ProductionConfig())
 app.config.from_object(DbEngine_config())
 app.config.from_object(MailConfig())
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+
+moment = Moment(app)
 
 login = LoginManager(app)
 login.login_view = 'login'
