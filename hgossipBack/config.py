@@ -2,11 +2,12 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-class Config:
+class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY')
     POSTS_PER_PAGE = 25
     DEBUG = False
     ADMINS = ['Harendra']
+    LANGUAGES = ['en', 'es']
 
 class MailConfig():
     MAIL_SERVER = os.environ.get('MAIL_SERVER')

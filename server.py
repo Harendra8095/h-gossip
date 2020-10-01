@@ -23,6 +23,10 @@ from hgossipBack import create_db_engine, create_db_sessionFactory
 from hgossipBack.models import User, Post
 
 from flask_bootstrap import Bootstrap
+from flask_babel import Babel, _
+from flask_babel import lazy_gettext as _l
+from flask import g
+from flask_babel import get_locale
 
 from flask_mail import Mail
 from flask_mail import Message
@@ -44,9 +48,11 @@ app.config.from_object(MailConfig())
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 moment = Moment(app)
+babel = Babel(app)
 
 login = LoginManager(app)
 login.login_view = 'login'
+login.login_message = _l('Please log in to access this page.')
 
 
 mail = Mail(app)
@@ -138,6 +144,13 @@ def before_request():
         u = session.query(User).filter_by(username=current_user.username).first()
         u.last_seen = datetime.utcnow()
         session.commit()
+    g.locale = str(get_locale())
+
+
+@babel.localeselector
+def get_locale():
+    #return request.accept_languages.best_match(app.config['LANGUAGES'])
+    return 'es'
 
 
 @app.route('/')
@@ -153,7 +166,7 @@ def index():
         post = Post(body=form.post.data, author=current_user)
         session.add(post)
         session.commit()
-        flash('Your post is now live!')
+        flash(_('Your post is now live!'))
         return redirect(url_for('index'))
     posts = current_user.followed_posts().all()
     return render_template("index.html", title='Home Page', form=form, posts=posts)
@@ -301,7 +314,7 @@ def unfollow(username):
     if form.validate_on_submit():
         user = session.query(User).filter_by(username=username).first()
         if user is None:
-            flash('User {} not found.'.format(username))
+            flash(_('User %(username)s not found.',username=username))
             return redirect(url_for('index'))
         if user == current_user:
             flash('You cannot unfollow yourself!')
