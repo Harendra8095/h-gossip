@@ -6,15 +6,17 @@ from hgossipBack.models.usermodels import User
 from hgossipBack.config import DbEngine_config
 from hgossipBack import create_db_engine, create_db_sessionFactory
 
+from flask_babel import _, lazy_gettext as _l
+
 
 class RegistrationForm(FlaskForm):
-    username = StringField('username', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
+    username = StringField(_l('username'), validators=[DataRequired()])
+    email = StringField(_l('Email'), validators=[DataRequired()])
+    password = PasswordField(_l('Password'), validators=[DataRequired()])
     password2 = PasswordField(
-        'Repeat Password', validators=[DataRequired(), EqualTo('password')]
+        _l('Repeat Password'), validators=[DataRequired(), EqualTo('password')]
     )
-    submit = SubmitField('Register')
+    submit = SubmitField(_l('Register'))
 
 
     def validate_username(self, username):
@@ -24,7 +26,7 @@ class RegistrationForm(FlaskForm):
         conn = session.connection()
         user = session.query(User).filter_by(username=username.data).first()
         if user is not None:
-            raise ValidationError('Please use a different username.')
+            raise ValidationError(_l('Please use a different username.'))
         session.close()
         conn.close()
 
@@ -36,6 +38,6 @@ class RegistrationForm(FlaskForm):
         conn = session.connection()
         user = session.query(User).filter_by(email=email.data).first()
         if user is not None:
-            raise ValidationError('Email address already exists.')
+            raise ValidationError(_l('Email address already exists.'))
         session.close()
         conn.close()
