@@ -22,7 +22,6 @@ class EditProfile(FlaskForm):
     def validate_username(self, username):
         from server import SQLSession
         session = SQLSession()
-        conn = session.connection()
         if username.data != self.original_username:
             user = session.query(User).filter_by(username=self.username.data).first()
             if user is not None:

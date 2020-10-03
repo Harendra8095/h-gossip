@@ -6,6 +6,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from hashlib import md5
 
+from server import login, SQLSession
+
 from .meta import Base
 from .follower import followers
 from .postsmodels import Post
@@ -63,7 +65,6 @@ class User(Base, UserMixin):
 
     
     def followed_posts(self):
-        from server import SQLSession
         session = SQLSession()
         followed = session.query(Post).join(
             followers, (followers.c.followed_id == Post.user_id)
@@ -88,11 +89,16 @@ class User(Base, UserMixin):
 
     @staticmethod
     def verify_reset_password(token):
-        from server import app, SQLSession
+        from server import app
         session = SQLSession()
         try:
             id=jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])['reset_password']
         except:
             return
         return session.query(User).get(id)
+
+@login.user_loader
+def load_user(id):
+    session = SQLSession()
+    return session.query(User).get(int(id))
     
