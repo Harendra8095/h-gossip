@@ -1,9 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SubmitField
 from wtforms.validators import DataRequired, Length, ValidationError
-from hgossipBack.config import DbEngine_config
-from hgossipBack import create_db_engine, create_db_sessionFactory
-from hgossipBack.models import User
+from hgossipBack.models.usermodels import User
 
 from flask_babel import _, lazy_gettext as _l
 

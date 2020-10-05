@@ -1,10 +1,8 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import DataRequired, ValidationError, Email, EqualTo
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import DataRequired, ValidationError, EqualTo
 from hgossipBack.models.usermodels import User
 
-from hgossipBack.config import DbEngine_config
-from hgossipBack import create_db_engine, create_db_sessionFactory
 
 from flask_babel import _, lazy_gettext as _l
 

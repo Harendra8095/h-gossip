@@ -1,10 +1,7 @@
-from flask.globals import session
 from flask_login import current_user, login_required
 from datetime import datetime
 from flask import g, flash, redirect, url_for, render_template
 from flask_babel import _, get_locale
-from flask_mail import Connection
-from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy_paginator import Paginator
 
 

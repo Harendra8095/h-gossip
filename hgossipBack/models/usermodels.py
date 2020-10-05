@@ -1,5 +1,5 @@
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, Integer, String, Sequence, DateTime
+from re import U
+from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship, backref
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash

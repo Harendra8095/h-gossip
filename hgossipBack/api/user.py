@@ -1,15 +1,15 @@
 from flask.globals import session
 from flask_login import current_user, login_user, login_required, logout_user
-from flask import redirect, url_for, flash, render_template, request, current_app
+from flask import redirect, url_for, flash, render_template, request
 from flask_babel import _
 from werkzeug.urls import url_parse
 
 from hgossipBack.email import send_password_reset_email
 from hgossipBack.forms import RegistrationForm, LoginFrom, EditProfile, ResetPasswordRequestForm, ResetPasswordForm
-from hgossipBack.models import User
+from hgossipBack.models.usermodels import User
 
 
-from server import SQLSession, mail
+from server import SQLSession
 
 
 from flask import Blueprint
@@ -113,5 +113,10 @@ def reset_password(token):
 
 @userBP.route('/logout')
 def logout():
+    from server import SQLSession
+    session = SQLSession()
+    connection = session.connection()
+    session.close()
+    connection.close()
     logout_user()
     return redirect(url_for('homeApi.index'))
