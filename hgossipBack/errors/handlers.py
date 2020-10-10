@@ -1,9 +1,7 @@
 from flask import render_template
-from server import SQLSession
 from hgossipBack.errors import bp
 
 
-session = SQLSession()
 
 
 @bp.app_errorhandler(404)
@@ -13,5 +11,7 @@ def not_found_error(error):
 
 @bp.app_errorhandler(500)
 def internal_error(error):
+    from server import SQLSession
+    session = SQLSession()
     session.rollback()
     return render_template('errors/500.html'), 500

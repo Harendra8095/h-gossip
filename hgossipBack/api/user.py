@@ -9,9 +9,6 @@ from hgossipBack.forms import RegistrationForm, LoginFrom, EditProfile, ResetPas
 from hgossipBack.models.usermodels import User
 
 
-from server import SQLSession
-
-
 from flask import Blueprint
 userBP = Blueprint('userApi', __name__)
 
@@ -20,6 +17,7 @@ userBP = Blueprint('userApi', __name__)
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('homeApi.index'))
+    from server import SQLSession
     session = SQLSession()
     connection = session.connection()
     form = RegistrationForm()
@@ -32,6 +30,8 @@ def register():
         connection.close()
         flash(_('Congratulations, you are now a registered user!'))
         return redirect(url_for('userApi.login'))
+    session.close()
+    connection.close()
     return render_template('auth/register.html', title=_('Register'), form=form)
 
 
@@ -39,24 +39,33 @@ def register():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('homeApi.index'))
+    from server import SQLSession
     form = LoginFrom()
     session = SQLSession()
+    connection = session.connection()
     if form.validate_on_submit():
         user = session.query(User).filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
             flash(_('Invalid username or password'))
+            session.close()
+            connection.close()
             return redirect(url_for('userApi.login'))
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('homeApi.index')
+        session.close()
+        connection.close()
         return redirect(next_page)
+    session.close()
+    connection.close()
     return render_template('auth/login.html', title=_('Sign In'), form=form)
 
 
 @userBP.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
+    from server import SQLSession
     session = SQLSession()
     connection = session.connection()
     form = EditProfile(current_user.username)
@@ -72,6 +81,8 @@ def edit_profile():
     elif request.method == 'GET':
         form.username.data = u.username
         form.bio.data = u.bio
+    session.close()
+    connection.close()
     return render_template('edit_profile.html', title=_('Edit Profile'), form=form)
 
 
@@ -79,25 +90,32 @@ def edit_profile():
 def reset_password_request():
     if current_user.is_authenticated:
         return redirect(url_for('homeApi.index'))
-    session = SQLSession()
     form = ResetPasswordRequestForm()
     if form.validate_on_submit():
+        from server import SQLSession
+        session = SQLSession()
+        connection = session.connection()
         user = session.query(User).filter_by(email=form.email.data).first()
         if user:
             send_password_reset_email(user)
         flash(_('Check your email for the instructions to reset your password'))
+        session.close()
+        connection.close()
         return redirect(url_for('userApi.login'))
     return render_template('auth/reset_pass.html', title=_('Reset Password'), form=form)
 
 
 @userBP.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
-    session = SQLSession()
-    connection = session.connection()
     if current_user.is_authenticated:
         return redirect(url_for('homeApi.index'))
+    from server import SQLSession
+    session = SQLSession()
+    connection = session.connection()
     user = User.verify_reset_password(token)
     if not user:
+        session.close()
+        connection.close()
         return redirect(url_for('homeApi.index'))
     form = ResetPasswordForm()
     if form.validate_on_submit():
@@ -108,6 +126,8 @@ def reset_password(token):
         connection.close()
         flash(_('Your Password has been reset.'))
         return redirect(url_for('userApi.login'))
+    session.close()
+    connection.close()
     return render_template('auth/reset_password.html', form=form)
 
 

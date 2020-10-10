@@ -18,9 +18,12 @@ class EditProfile(FlaskForm):
 
 
     def validate_username(self, username):
-        from server import SQLSession
-        session = SQLSession()
         if username.data != self.original_username:
+            from server import SQLSession
+            session = SQLSession()
+            connection = session.connection()
             user = session.query(User).filter_by(username=self.username.data).first()
+            session.close()
+            connection.close()
             if user is not None:
                 raise ValidationError(_l('Please use a different username.'))

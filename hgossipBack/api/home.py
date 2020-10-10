@@ -12,29 +12,31 @@ from hgossipBack.models.postsmodels import Post
 from hgossipBack.forms import PostForm, EmptyForm
 
 
-from server import SQLSession
-
 from flask import Blueprint
 homeBP = Blueprint('homeApi', __name__)
 
 @homeBP.before_app_request
 def before_request():
-    session = SQLSession()
     if current_user.is_authenticated:
+        from server import SQLSession
+        session = SQLSession()
+        connection = session.connection()
         u = session.query(User).filter_by(username=current_user.username).first()
         u.last_seen = datetime.utcnow()
         session.commit()
         session.close()
-    g.locale = str(get_locale())
+        connection.close()
+    g.locale = str(get_locale())   
 
 
 @homeBP.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
-    session = SQLSession()
-    connection = session.connection()
     form = PostForm()
     if form.validate_on_submit():
+        from server import SQLSession
+        session = SQLSession()
+        connection = session.connection()
         post = Post(body=form.post.data, author=current_user)
         session.merge(post)
         session.commit()
@@ -49,15 +51,21 @@ def index():
 @homeBP.route('/explore')
 @login_required
 def explore():
+    from server import SQLSession
     session = SQLSession()
+    connection = session.connection()
     posts = session.query(Post).order_by(Post.timestamp.desc()).all()
+    session.close()
+    connection.close()
     return render_template('index.html', title=_('Explore'), posts=posts)
 
 
 @homeBP.route('/user/<username>')
 @login_required
 def user(username):
+    from server import SQLSession
     session = SQLSession()
+    connection = session.connection()
     user = session.query(User).filter_by(username=username).first()
     # page_no = request.args.get('page', 1, type=int)
     posts = user.posts.order_by(Post.timestamp.desc())
@@ -66,6 +74,8 @@ def user(username):
     # paginator(
     #    page, app.config['POSTS_PER_PAGE'], False
     # )
+    session.close()
+    connection.close()
     next_url = url_for('homeApi.user', username=user.username, page_no=page.next_page_number) \
         if page.has_next() else None
     prev_url = url_for('homeApi.user', username=user.username, page_no=page.previous_page_number) \
@@ -74,11 +84,25 @@ def user(username):
     return render_template('user.html', user=user, posts=posts, next_url=next_url, prev_url=prev_url, form=form)
 
 
+@homeBP.route('/user/<username>/popup')
+@login_required
+def user_popup(username):
+    from server import SQLSession
+    session = SQLSession()
+    connection = session.connection()
+    user = session.query(User).filter_by(username=username).first()
+    form = EmptyForm()
+    session.close()
+    connection.close()
+    return render_template('user_popup.html', user=user, form=form)
+
+
 @homeBP.route('/follow/<username>', methods=['POST'])
 @login_required
 def follow(username):
     form = EmptyForm()
     if form.validate_on_submit():
+        from server import SQLSession
         session = SQLSession()
         connection = session.connection()
         user = session.query(User).filter_by(username=username).first()
@@ -104,6 +128,7 @@ def follow(username):
 def unfollow(username):
     form = EmptyForm()
     if form.validate_on_submit():
+        from server import SQLSession
         session = SQLSession()
         connection = session.connection()
         user = session.query(User).filter_by(username=username).first()

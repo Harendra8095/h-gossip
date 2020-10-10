@@ -6,7 +6,6 @@ from hgossipBack.models.usermodels import User
 
 from flask_babel import _, lazy_gettext as _l
 
-from server import SQLSession
 
 class RegistrationForm(FlaskForm):
     username = StringField(_l('username'), validators=[DataRequired()])
@@ -19,15 +18,23 @@ class RegistrationForm(FlaskForm):
 
 
     def validate_username(self, username):
+        from server import SQLSession
         session = SQLSession()
+        connection = session.connection()
         user = session.query(User).filter_by(username=username.data).first()
+        session.close()
+        connection.close()
         if user is not None:
             raise ValidationError(_l('Please use a different username.'))
 
 
     
     def validate_email(self, email):
+        from server import SQLSession
         session = SQLSession()
+        connection = session.connection()
         user = session.query(User).filter_by(email=email.data).first()
+        session.close()
+        connection.close()
         if user is not None:
             raise ValidationError(_l('Email address already exists.'))

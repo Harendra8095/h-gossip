@@ -49,9 +49,13 @@ class User(Base, UserMixin):
 
 
     def is_following(self, user):
-        return self.followed.filter(
-            followers.c.followed_id == user.id
-        ).count() > 0
+        from server import SQLSession
+        session = SQLSession()
+        connection = session.connection()
+        count_ = self.followed.filter(followers.c.followed_id == user.id).count() > 0
+        session.close()
+        connection.close()
+        return count_
 
 
     def follow(self, user):
