@@ -66,12 +66,15 @@ class User(Base, UserMixin):
     
     def followed_posts(self):
         session = SQLSession()
+        connection = session.connection()
         followed = session.query(Post).join(
             followers, (followers.c.followed_id == Post.user_id)
         ).filter(
             followers.c.follower_id == self.id
         )
         own = session.query(Post).filter_by(user_id=self.id)
+        session.close()
+        connection.close()
         return followed.union(own).order_by(Post.timestamp.desc())
 
 
@@ -91,14 +94,24 @@ class User(Base, UserMixin):
     def verify_reset_password(token):
         from server import app
         session = SQLSession()
+        connection = session.connection()
         try:
             id=jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])['reset_password']
         except:
+            session.close()
+            connection.close()
             return
-        return session.query(User).get(id)
+        user_ = session.query(User).get(id)
+        session.close()
+        connection.close()
+        return user_
 
 @login.user_loader
 def load_user(id):
     session = SQLSession()
-    return session.query(User).get(int(id))
+    connection = session.connection()
+    user_ = session.query(User).get(int(id))
+    session.close()
+    connection.close()
+    return user_
     
