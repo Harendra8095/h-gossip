@@ -28,7 +28,7 @@ class User(Base, UserMixin):
     last_seen = Column(DateTime, default=datetime.utcnow)
 
     followed = relationship(
-        'User',
+        "User",
         secondary=followers,
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
@@ -49,7 +49,6 @@ class User(Base, UserMixin):
 
 
     def is_following(self, user):
-        from server import SQLSession
         session = SQLSession()
         connection = session.connection()
         count_ = self.followed.filter(followers.c.followed_id == user.id).count() > 0

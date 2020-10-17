@@ -5,8 +5,8 @@ from flask_babel import _, get_locale
 from sqlalchemy_paginator import Paginator
 
 
-from hgossipBack.models.usermodels import User
-from hgossipBack.models.postsmodels import Post
+from hgossipBack.models import User, Post
+# from hgossipBack.models.postsmodels import Post
 
 
 from hgossipBack.forms import PostForm, EmptyForm
@@ -49,7 +49,7 @@ def index():
 
 
 @homeBP.route('/explore')
-@login_required
+# @login_required
 def explore():
     from server import SQLSession
     session = SQLSession()

@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, ValidationError, EqualTo
-from hgossipBack.models.usermodels import User
+from hgossipBack.models import User
 
 
 from flask_babel import _, lazy_gettext as _l

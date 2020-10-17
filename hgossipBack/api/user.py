@@ -6,7 +6,7 @@ from werkzeug.urls import url_parse
 
 from hgossipBack.email import send_password_reset_email
 from hgossipBack.forms import RegistrationForm, LoginFrom, EditProfile, ResetPasswordRequestForm, ResetPasswordForm
-from hgossipBack.models.usermodels import User
+from hgossipBack.models import User
 
 
 from flask import Blueprint
