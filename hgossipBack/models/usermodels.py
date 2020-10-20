@@ -1,16 +1,17 @@
 from re import U
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship, backref
-from datetime import datetime
+from datetime import date, datetime
+from sqlalchemy.orm.relationships import foreign
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from hashlib import md5
 
-from server import login, SQLSession
 
 from .meta import Base
 from .follower import followers
 from .postsmodels import Post
+from .messagemodels import Message
 
 from time import time
 import jwt
@@ -23,10 +24,23 @@ class User(Base, UserMixin):
     username = Column(String(64), unique=True, index=True)
     email = Column(String(127), unique=True, index=True)
     password_hash = Column(String(127))
-    posts = relationship('Post', backref='author', lazy='dynamic')
     bio = Column(String(127))
     last_seen = Column(DateTime, default=datetime.utcnow)
+    last_message_read_time = Column(DateTime)
 
+    # Relationship begins here
+    
+    messages_sent = relationship('Message',
+        foreign_keys='Message.sender_id',
+        backref='author', lazy='dynamic'
+    )
+    message_recieved = relationship('Message',
+        foreign_keys='Message.recipient_id',
+        backref='recipient', lazy='dynamic'
+    )
+    posts = relationship('Post',
+        backref='author', lazy='dynamic'
+    )
     followed = relationship(
         "User",
         secondary=followers,
@@ -35,6 +49,17 @@ class User(Base, UserMixin):
         backref=backref('followers', lazy='dynamic'),
         lazy='dynamic'
     )
+
+
+    def new_messages(self):
+        from server import SQLSession
+        session = SQLSession()
+        last_read_time = self.last_message_read_time or datetime(1900,1,1)
+        unread =  session.query(Message).filter_by(recipient=self).filter(
+            Message.timestamp > last_read_time
+        ).count()
+        session.close()
+        return unread
 
     def avatar(self, size):
         digest = md5(self.email.lower().encode('utf-8')).hexdigest()
@@ -49,6 +74,7 @@ class User(Base, UserMixin):
 
 
     def is_following(self, user):
+        from server import SQLSession
         session = SQLSession()
         connection = session.connection()
         count_ = self.followed.filter(followers.c.followed_id == user.id).count() > 0
@@ -68,6 +94,7 @@ class User(Base, UserMixin):
 
     
     def followed_posts(self):
+        from server import SQLSession
         session = SQLSession()
         connection = session.connection()
         followed = session.query(Post).join(
@@ -95,7 +122,7 @@ class User(Base, UserMixin):
 
     @staticmethod
     def verify_reset_password(token):
-        from server import app
+        from server import app, SQLSession
         session = SQLSession()
         connection = session.connection()
         try:
@@ -108,13 +135,4 @@ class User(Base, UserMixin):
         session.close()
         connection.close()
         return user_
-
-@login.user_loader
-def load_user(id):
-    session = SQLSession()
-    connection = session.connection()
-    user_ = session.query(User).get(int(id))
-    session.close()
-    connection.close()
-    return user_
     

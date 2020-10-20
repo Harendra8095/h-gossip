@@ -45,5 +45,16 @@ def get_locale():
     return request.accept_languages.best_match(app.config['LANGUAGES'])
 
 
+@login.user_loader
+def load_user(id):
+    from hgossipBack.models import User
+    session = SQLSession()
+    connection = session.connection()
+    user_ = session.query(User).get(int(id))
+    session.close()
+    connection.close()
+    return user_
+
+
 if __name__ == "__main__":
     app.run()

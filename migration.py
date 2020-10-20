@@ -1,5 +1,5 @@
 from flask_migrate import Migrate, MigrateCommand
-from hgossipBack.models import *
+from hgossipBack.models import Base
 from flask_script import Manager
 from server import app
 

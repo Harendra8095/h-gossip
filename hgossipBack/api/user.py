@@ -1,4 +1,3 @@
-from flask.globals import session
 from flask_login import current_user, login_user, login_required, logout_user
 from flask import redirect, url_for, flash, render_template, request
 from flask_babel import _
