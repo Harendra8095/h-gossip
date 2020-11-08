@@ -15,7 +15,7 @@
                     {{ _('%(count)d following', count=user.followed.count()) }}
                 </p>
                 {% if user != current_user %}
-                    {% if not current_user.is_following(user) %}
+                    {% if not current_user.is_following(user.id) %}
                     <p>
                         <form action="{{ url_for('homeApi.follow', username=user.username) }}" method="POST">
                             {{ form.hidden_tag() }}

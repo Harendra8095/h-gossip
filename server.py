@@ -30,6 +30,11 @@ from hgossipBack.errors import bp as errors_bp
 from hgossipBack.api import *
 
 
+def send_async_email(app, msg):
+    from server import mail
+    with app.app_context():
+        mail.send(msg)
+
 @app.route('/')
 def get():
     return "<h1> Hello, Welcome to backend of h-gossip </h1>"

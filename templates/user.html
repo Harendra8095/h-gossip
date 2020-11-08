@@ -16,7 +16,7 @@
                 <p>{{ _('%(count)d followers', count=user.followers.count()) }}, {{ _('%(count)d following', count=user.followed.count()) }}</p>
                 {% if user == current_user %}
                 <p><a href="{{ url_for('userApi.edit_profile') }}">{{ _('Edit your Profile') }}</a></p>
-                {% elif not current_user.is_following(user) %}
+                {% elif not current_user.is_following(user.id) %}
                 <p>
                     <form action="{{ url_for('homeApi.follow', username=user.username) }}" method="POST">
                         {{ form.hidden_tag() }}
@@ -29,6 +29,11 @@
                         {{ form.hidden_tag() }}
                         {{ form.submit(value=_('Unfollow'), class_='btn btn-default') }}
                     </form>
+                </p>
+                {% endif %}
+                {% if user != current_user %}
+                <p>
+                    <a href="{{ url_for('homeApi.send_message', recipient=user.username) }}">{{ _('Send private message') }}</a>
                 </p>
                 {% endif %}
             </td>

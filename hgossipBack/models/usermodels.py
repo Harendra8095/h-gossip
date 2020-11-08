@@ -1,4 +1,5 @@
 from re import U
+from flask_sqlalchemy import BaseQuery
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship, backref
 from datetime import date, datetime
@@ -6,12 +7,13 @@ from sqlalchemy.orm.relationships import foreign
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from hashlib import md5
+import json
 
 
 from .meta import Base
 from .follower import followers
 from .postsmodels import Post
-from .messagemodels import Message
+from .messagemodels import Message, Notification
 
 from time import time
 import jwt
@@ -30,11 +32,14 @@ class User(Base, UserMixin):
 
     # Relationship begins here
     
+    notifications = relationship('Notification',
+        backref='user', lazy='dynamic'
+    )
     messages_sent = relationship('Message',
         foreign_keys='Message.sender_id',
         backref='author', lazy='dynamic'
     )
-    message_recieved = relationship('Message',
+    messages_recieved = relationship('Message',
         foreign_keys='Message.recipient_id',
         backref='recipient', lazy='dynamic'
     )
@@ -49,6 +54,18 @@ class User(Base, UserMixin):
         backref=backref('followers', lazy='dynamic'),
         lazy='dynamic'
     )
+
+
+    def add_notification(self, name, data):
+        print(name,data)
+        self.notifications.filter_by(name=name).delete()
+        n = Notification(name=name, payload_json=json.dumps(data), user=self)
+        from server import SQLSession
+        session = SQLSession()
+        session.add(n)
+        session.commit()
+        session.close()
+        return n
 
 
     def new_messages(self):
@@ -73,23 +90,23 @@ class User(Base, UserMixin):
         return check_password_hash(self.password_hash, password)
 
 
-    def is_following(self, user):
+    def is_following(self, user_id):
         from server import SQLSession
         session = SQLSession()
         connection = session.connection()
-        count_ = self.followed.filter(followers.c.followed_id == user.id).count() > 0
+        count_ = session.query(followers).filter(followers.c.followed_id == user_id).count() > 0
         session.close()
         connection.close()
         return count_
 
 
     def follow(self, user):
-        if not self.is_following(user):
+        if not self.is_following(user.id):
             self.followed.append(user)
 
     # TODO unfollow not working
     def unfollow(self, user):
-        if not self.is_following(user):
+        if not self.is_following(user.id):
             self.followed.remove(user)
 
     
