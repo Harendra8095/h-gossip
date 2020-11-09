@@ -1,6 +1,6 @@
-from re import U
 from flask_sqlalchemy import BaseQuery
 from sqlalchemy import Column, Integer, String, DateTime
+from flask_login import current_user
 from sqlalchemy.orm import relationship, backref
 from datetime import date, datetime
 from sqlalchemy.orm.relationships import foreign
@@ -94,22 +94,21 @@ class User(Base, UserMixin):
         from server import SQLSession
         session = SQLSession()
         connection = session.connection()
-        count_ = session.query(followers).filter(followers.c.followed_id == user_id).count() > 0
+        count_ = session.query(followers).filter(
+            followers.c.followed_id == user_id).filter(
+                followers.c.follower_id == current_user.id).count() > 0  
         session.close()
         connection.close()
         return count_
-
 
     def follow(self, user):
         if not self.is_following(user.id):
             self.followed.append(user)
 
-    # TODO unfollow not working
     def unfollow(self, user):
-        if not self.is_following(user.id):
+        if self.is_following(user.id):
             self.followed.remove(user)
 
-    
     def followed_posts(self):
         from server import SQLSession
         session = SQLSession()
