@@ -104,10 +104,19 @@ def user_popup(username):
     session = SQLSession()
     connection = session.connection()
     user = session.query(User).filter_by(username=username).first()
+    abt_me = user.bio
+    lst_seen = user.last_seen
+    followers_c = user.followers.count()
+    followed_c = user.followed.count()
     form = EmptyForm()
     session.close()
     connection.close()
-    return render_template('user_popup.html', user=user, form=form)
+    return render_template('user_popup.html', user=user, form=form,
+        lst_seen=lst_seen,
+        followed_c=followed_c,
+        followers_c=followers_c,
+        abt_me=abt_me
+        )
 
 
 @homeBP.route('/follow/<username>', methods=['POST'])
