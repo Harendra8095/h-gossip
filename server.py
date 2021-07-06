@@ -1,4 +1,7 @@
-from flask import Flask, request
+from dotenv import load_dotenv
+load_dotenv()
+
+from flask import Flask, request, render_template
 from flask_moment import Moment
 from flask_babel import Babel
 from flask_login import LoginManager
@@ -6,6 +9,7 @@ from flask_mail import Mail
 from flask_bootstrap import Bootstrap
 
 from hgossipBack.config import *
+from hgossipBack.models import Post
 from hgossipBack import create_db_engine, create_db_sessionFactory
 from flask_babel import _, lazy_gettext as _l
 
@@ -37,8 +41,21 @@ def send_async_email(app, msg):
 
 @app.route('/')
 def get():
-    return "<h1> Hello, Welcome to backend of h-gossip </h1>"
-
+    from server import SQLSession
+    session = SQLSession()
+    connection = session.connection()
+    posts = session.query(Post).order_by(Post.timestamp.desc())
+    # posts = [{
+    #     "id": i.id,
+    #     "body": i.body,
+    #     "timestamp": i.timestamp,
+    #     "author": i.user_id
+    # } for i in posts_q]
+    # print(posts)
+    session.close()
+    connection.close()
+    # posts.__class__ = BaseQuery
+    return render_template('index.html', title=_('Explore'), posts=posts)
 
 app.register_blueprint(errors_bp)
 app.register_blueprint(userBP, url_prefix='/{}/user'.format(API_VERSION))
