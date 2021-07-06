@@ -14,4 +14,5 @@ def internal_error(error):
     from server import SQLSession
     session = SQLSession()
     session.rollback()
+    session.close()
     return render_template('errors/500.html'), 500
