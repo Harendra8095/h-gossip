@@ -103,7 +103,7 @@
                 {% else %}
                 <li><a href="{{ url_for('homeApi.user', username=current_user.username) }}">{{ _('Profile') }}</a></li>
                 <li><a href="{{url_for('userApi.logout') }}">{{ _('LogOut') }}</a></li>
-                <li>
+                <!-- <li>
                     <a href="{{ url_for('homeApi.messages') }}">
                         {{ _('Messages') }}
                         {% set new_messages = current_user.new_messages() %}
@@ -115,7 +115,7 @@
                             </span>
                         {% endif %}
                     </a>
-                </li>
+                </li> -->
                 {% endif %}
             </ul>
         </div>
