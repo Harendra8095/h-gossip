@@ -26,6 +26,7 @@ class DbEngine_config():
     if (os.environ.get('TEST') == '1'):
         DB_NAME = 'h_gossip_test'
     DB_URL = f'{DB_DIALECT}://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+    DB_URL = os.environ.get('DATABASE_URL') if os.environ.get('DATABASE_URL') else DB_URL
     print(DB_URL)
     SQLALCHEMY_DATABASE_URI = DB_URL
 
